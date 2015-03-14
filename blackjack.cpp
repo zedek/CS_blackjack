@@ -40,6 +40,9 @@ Card Deck::draw_card() {
 bool Deck::empty() {
     return top >= 52;
 }
+int  Deck::_top() {
+    return top;
+}
 //Hand
 void Hand::split_back (Card& card) {
     cards_in_hand.push_back (card);
@@ -163,6 +166,8 @@ void Dealer::is_blackjack() {
 Player::Player (Deck& d) {
     hit (d);
     hit (d);
+    money = 500;
+    name = "P" + d._top()/2;
 }
 void Player::showhands() {
     if (split_hand != NULL) {
@@ -201,6 +206,14 @@ void Player::betting (int& min) {
             x = false;
         }
     }
+}
+ostream &operator<< (ostream& output, Hand& h) {
+    for (int i = 0; i < h.size(); i++)
+        output << h.get_card (i);
+    return output;
+}
+int  Player::get_money() {
+    return money;
 }
 // Game
 Game::Game (int x) {
@@ -250,16 +263,15 @@ ostream& operator<< (ostream &output, const Dealer& d) {
 }
 void Game::print_score() {
     gotoxy (3, 2);
-    cout << "PLAYERS:" << endl;
-    cout << "--------------------";
+    cout << "PLAYERS:" << endl
+         << "---------------------------------";
     gotoxy (3, 4);
     for (size_t i = 0; i < players.size(); i++) {
-        cout << "P" << i + 1 << " "; //<<  players[i].get_money() << " ";
+        cout << "P" << i + 1 << " " <<  players[i].get_money() << " ";
         if (betting)
             cout << players[i].get_card (1) << null_card;
         else
-            for (int t = 0; t < players[i].size(); t++)
-                cout << players[i].get_card (t);
+            cout << players[i] << " ";
         cout << endl << "   ";
     }
     gotoxy (3, 4 + players.size());

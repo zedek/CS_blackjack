@@ -19,6 +19,7 @@ class Deck {
     void shuffle();
     Card draw_card();
     bool empty();
+    int _top();
 
   private:
     int ndeck;
@@ -67,7 +68,7 @@ class Hand {
     bool get_blackjack();
     void split_back (Card& card);
     Card get_card (int i);
-
+    friend ostream& operator<< (ostream& output, Hand& h);
 
   private:
     vector<Card> cards_in_hand;

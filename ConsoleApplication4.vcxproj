@@ -85,8 +85,6 @@
   <ItemGroup>
     <ClInclude Include="blackjack.h" />
     <ClInclude Include="card.h" />
-    <ClInclude Include="Header.h" />
-    <ClInclude Include="Header1.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
