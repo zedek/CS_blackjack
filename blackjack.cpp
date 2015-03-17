@@ -8,10 +8,13 @@
 #include "blackjack.h"
 
 using namespace std;
-
 Card null_card;
-
-
+void clear_line (int x,int y) {
+    gotoxy (x, y);
+    int to_end = 74 - x;
+    for (int i = 0; i < to_end; i++)
+        cout << " ";
+}
 //Deck
 Deck::Deck() {
     cards.resize (52);
@@ -70,17 +73,16 @@ int Hand::getscore() {
     return score;
 }
 void Hand::hit (Deck& d) {
-    Card g = d.draw_card();
-    if (g.get_rank() == 1) {
+    Card& g = d.draw_card();
+    if (g.get_rank() == 1)
         ace += 1;
-        gotoxy (15, 20);
-    }
     cards_in_hand.push_back (g);
     if (cards_in_hand.size() > 2)
         has_hit = true;
     total();
 }
 void Hand::total() {
+    int a = ace;
     score = 0;
     for (size_t i = 0; i <= cards_in_hand.size() - 1; i++) {
         if (getrank (i) == 1) score += 11;
@@ -88,12 +90,16 @@ void Hand::total() {
         else score += getrank (i);
         is_blackjack();
     }
-    while (score > 21 && ace > 0) {
-        score -= 10;
-        ace--;
+    if (a != 0) {
+        while (score > 21 && a > 0) {
+            score -= 10;
+            a--;
+        }
     }
-    if (score > 21)
+    if (a == 0 && score > 21) {
         fold();
+        return;
+    }
 }// Allows for multple aces to get reduced as score keeps going over 21.
 int Hand::getrank (int i) {
     return cards_in_hand[i].get_rank();
@@ -132,41 +138,12 @@ void Hand::is_blackjack() {
 Dealer::Dealer (Deck& d) {
     hit (d);
     hit (d);
-    ace = 0;
-    score = 0;
-    blackjack = false;
-    bust = false;
 }
 Dealer::Dealer() {
 }
-int Dealer::getscore() {
-    return score;
-}
-void Dealer::total() {
-    for (size_t i = 0; i <= hand.size() - 1; i++) {
-        if (hand[i].get_rank() == 1) score += 11;
-        if (hand[i].get_rank() >= 11) score += 10;
-        score += hand[i].get_rank();
-        is_blackjack();
-    }
-}
-void Dealer::hit (Deck& d) {
-    hand.push_back (d.draw_card());
-    total();
-}
 void Dealer::dealermove (Deck& d) {
-    if (score >= 17)  ;  // if there's an ace above
+    if (getscore() >= 17)  ;  // if there's an ace above
     else { hit (d); dealermove (d); }
-}
-bool Dealer::get_blackjack() {
-    return blackjack;
-}
-void Dealer::is_blackjack() {
-    if ((Dealer::hand[0].get_rank() || Dealer::hand[1].get_rank() > 9) &&
-            ((Dealer::hand[0].get_rank() || Dealer::hand[1].get_rank() == 1)))
-        blackjack = true;
-    else if (score > 21)
-        bust = true;
 }
 //Player
 Player::Player (Deck& d) {
@@ -201,20 +178,21 @@ void Player::betting (int& min) {
     bool x = true;
     int f = min;
     FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
+    Sleep (500);
     while (x) {
-        if (-GetAsyncKeyState (38)) {
+        if (GetAsyncKeyState (38) & 0x8000) {
             f += 10;
             gotoxy (0, 15);
             cout << f;
-            Sleep (100);
+            Sleep (250);
         }
-        if (-GetAsyncKeyState (40)) {
+        if (GetAsyncKeyState (40) & 0x8000) {
             if (f > 10) f -= 10;
             gotoxy (0, 15);
             cout << f;
-            Sleep (100);
+            Sleep (250);
         }
-        if (-GetAsyncKeyState (72) & 0x8000) {
+        if (GetAsyncKeyState (71) & 0x8000) {
             money -= f;
             bet (f);
             gotoxy (0, 15);
@@ -243,6 +221,14 @@ ostream &operator<< (ostream& output, Player& p) {
     }
     return output;
 }
+ostream &operator<< (ostream& output, Dealer* d) {
+    if (d->mode()) {
+        for (int i = 0; i < d->size(); i++)
+            output << d->get_card (i);
+    } else
+        output << d->get_card (0) << null_card;
+    return output;
+}
 int  Player::get_money() {
     return money;
 }
@@ -255,11 +241,14 @@ string Player::player_name (int x) {
     else name = '6';
     return name;
 }
+void Player::split_fold() {
+    _split = false;
+}
 // Game
 Game::Game (int x) {
     du = Deck (x);
-    dealer = &Dealer (du);
     du.shuffle();
+    dealer = new Dealer (du);
     for (int i = 0; i < x; i++) {
         Player nu (du);
         nu.player_name (i);
@@ -286,18 +275,11 @@ void Game::nextplayer() {
         gotoxy (0, 4 + player);
         cout << ">>";
     }
-    for (int i = 0; i < 12; i++) {
-        gotoxy (40, i);
-        for (int h = 0; h < 35; h++)
-            cout << " ";
-    }
+    for (int i = 0; i < 12; i++)
+        clear_line (40, i);
 }
 int  Game::winner() {
     return 0;
-}
-ostream& operator<< (ostream &output, const Dealer& d) {
-    output << &d.hand[0];
-    return output;
 }
 void Game::print_score() {
     gotoxy (3, 2);
@@ -308,57 +290,77 @@ void Game::print_score() {
         cout << players[i] << " "
              << endl << "   ";
     gotoxy (3, 4 + players.size());
-    cout << dealer << endl;
+    cout << "Dealer"<< dealer << endl;
 }
 int  Game::minbet() {
     return min;
 }
 void Game::gameHand() {
-    char c;
+    clear_line (0, 23);
+    if (players[player].get_fold())
+        nextplayer();
     gotoxy (0, 23);
-    cout << "Press F + Enter to see your hand" << endl;
-    cin >> c;
-    if (c == 'f')
-        players[player].showhands();
-    else gameHand();
+    cout << "Press F to pay respects" << endl;
+    Sleep (250);
+    bool x = true;
+    while (x) {
+        if (GetAsyncKeyState (70) & 0x8000) {
+            players[player].showhands();
+            Sleep (250);
+            x = false;
+        }
+    }
 }
 void Game::betTurn() {
     Player &p = players[player];
+    clear_line (0, 23);
+    gotoxy (0, 23);
+    cout << "Press S to split, G then UP/Down and G to bet, H to call, J to fold" << endl;
+    FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
     int c = minbet();
-    char x;
-    cin >> x;
-    switch (x) {
-        case ('s') :
+    bool x = true;
+    Sleep (100);
+    while (x) {
+        if (GetAsyncKeyState (83) & 0x8000) {
             p.split (du);
             if (p.has_split())		{
                 p.showhands();
                 print_score();
-                break;
+                betTurn();
+                x = false;
+                Sleep (100);
             }
-            break;
-        case ('g') :
+        }
+        if (GetAsyncKeyState (71) & 0x8000) {
             p.betting (c);
             print_score();
-            break;
-        case ('h') :
-            /* p.call();
-            }*/
             nextplayer();
-            break;
-        case ('j') :
+            Sleep (100);
+            x = false;
+            return;
+        }
+        if (GetAsyncKeyState (72) & 0x8000) {
+            nextplayer();
+            Sleep (100);
+            x = false;
+            return;
+        }
+        if (GetAsyncKeyState (74) & 0x8000) {
             if (p.has_split()) {
                 int i;
                 cout << "Which hand do you want to fold?";
                 cin >> i;
                 if (i == 1) p.fold();
-                else if (i == 2) p.split_hand.fold();
+                else if (i == 2) p.split_fold();
                 else cout << "Error";
                 betTurn();
+                return;
             } else {
                 p.fold();
                 nextplayer();
+                return;
             }
-            break;
+        }
     }
 }
 void Game::calcWinner() {
@@ -422,27 +424,29 @@ int  Game::num_players() {
 void Game::hitTurn() {
     Player &p = players[player];
     p.showhands();
-    char x;
-    cin >> x;
-    cin.clear();
-    gotoxy (0, 24);
+    clear_line (0, 23);
+    gotoxy (0, 23);
     cout << "F to hit, H to stand";
-    switch (x) {
-        case ('f') :
+    FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
+    if (players[player].get_fold()) {
+        nextplayer();
+        return;
+    }
+    Sleep (100);
+    bool x = true;
+    while (x) {
+        if (GetAsyncKeyState (70) & 0x8000) {
             p.hit (du);
             p.showhands();
             print_score();
-            p.total();
-            if (p.get_fold()) {
-                nextplayer();
-                break;
-            } else hitTurn();
-            break;
-        case ('h') :
+            x = false;
+            hitTurn();
+        }
+        if (GetAsyncKeyState (72) & 0x8000) {
             nextplayer();
-            break;
+            x = false;
+            Sleep (100);
+            return;
+        }
     }
-}
-Player& Game::get_in (int i) {
-    return *player_in[i];
 }

@@ -16,7 +16,7 @@ int main() {
     Game t (y);
     gotoxy (0, 4);
     cout << ">>";
-    t[0].setcard (1, t[0].get_card (0));
+    //t[0].setcard (1, t[0].get_card (0));
     t.gameHand();
     bool x = true;
     while (x) {
@@ -25,9 +25,10 @@ int main() {
             t.gameHand();
         } x = false;
     }
-    t.player = 0;
-    for (int i = 0; i < y; i++)
+    for (int i = 0; i < y; i++) {
         t.hitTurn();
+        t.gameHand();
+    }
     t.calcWinner();
     gotoxy (0, 23);
     return 0;
