@@ -6,11 +6,16 @@
 #include <vector>
 #include <stdio.h>
 #include <ctime>
+#include <string>
 
 #include "card.h"
 #include "blackjack.h"
 
+
+
 using namespace std;
+
+
 
 class Deck {
   public:
@@ -52,7 +57,7 @@ class Hand {
     Hand();
     int getrank (int i);
     void setcard (int i, Card& x);
-    void total(); // to control  score
+    void total(); // to control  scoreh
     void hit (Deck& d);
     int size();
     int getscore();
@@ -62,13 +67,14 @@ class Hand {
     int ace;
     bool get_fold();
     bool get_call();
-    void showsplit();
+
     void is_blackjack();
     void call (int min);
     bool get_blackjack();
     void split_back (Card& card);
-    Card get_card (int i);
+    Card& get_card (int i);
     friend ostream& operator<< (ostream& output, Hand& h);
+    bool mode();
 
   private:
     vector<Card> cards_in_hand;
@@ -77,6 +83,7 @@ class Hand {
     int bet_value;
     bool blackjack;
     bool folded;
+    bool has_hit = false;
 };
 
 class Player : public Hand {
@@ -89,12 +96,15 @@ class Player : public Hand {
     void split (Deck& du);
     bool has_split();
     void betting (int& min);
-
+    void showsplit();
+    Hand split_hand;
 
   private:
-    Hand* split_hand = NULL;
     int money;
+
     string name;
+    bool _split = false;
+
 };
 
 class Game {
@@ -106,7 +116,7 @@ class Game {
     void nextplayer();
     void print_score();
     void gameHand();
-    bool mode();
+
     int minbet();
     void calcWinner();
     Player& get_in (int i);
@@ -115,7 +125,7 @@ class Game {
     Player& operator[] (int x);
 
 
-    bool betting = true;
+
     Deck du;
 
 
@@ -125,7 +135,7 @@ class Game {
 
     int player = 0;
     int total_bet;
-    Card null_card;
+
     int min;
     Dealer* dealer;
 

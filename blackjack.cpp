@@ -2,11 +2,15 @@
 #include <Windows.h>
 #include <vector>
 #include <stdio.h>
+#include <string.h>
 #include <ctime>
 #include "card.h"
 #include "blackjack.h"
 
 using namespace std;
+
+Card null_card;
+
 
 //Deck
 Deck::Deck() {
@@ -54,11 +58,13 @@ Hand::Hand() {
     folded = false;
     blackjack = false;
 }
-Card Hand::get_card (int i) {
+Card& Hand::get_card (int i) {
     return cards_in_hand[i];
 }
 void Hand::setcard (int i, Card& x) {
-    cards_in_hand[i] = x;
+    if (cards_in_hand.size() == 0) cards_in_hand.push_back (x);
+    else
+        cards_in_hand[i] = x;
 }
 int Hand::getscore() {
     return score;
@@ -70,20 +76,21 @@ void Hand::hit (Deck& d) {
         gotoxy (15, 20);
     }
     cards_in_hand.push_back (g);
+    if (cards_in_hand.size() > 2)
+        has_hit = true;
     total();
 }
 void Hand::total() {
     score = 0;
-    int a = ace;
     for (size_t i = 0; i <= cards_in_hand.size() - 1; i++) {
         if (getrank (i) == 1) score += 11;
         else if (getrank (i) > 10) score += 10;
         else score += getrank (i);
         is_blackjack();
     }
-    while (score > 21 && a > 0) {
+    while (score > 21 && ace > 0) {
         score -= 10;
-        a--;
+        ace--;
     }
     if (score > 21)
         fold();
@@ -98,9 +105,9 @@ void Hand::showhand() {
     for (int i = 0; i < size(); i++)
         cards_in_hand[i].display_card (40 + 3 * i, 0, false, true);
 }
-void Hand::showsplit() {
-    for (int i = 0; i < size(); i++)
-        cards_in_hand[i].display_card (60 + 3 * i, 0, false, true);
+void Player::showsplit() {
+    for (int i = 0; i < split_hand.size(); i++)
+        split_hand.get_card (i).display_card (60 + 3 * i, 0, false, true);
 }
 void Hand::call (int min) {
     bet_value = min;
@@ -109,7 +116,6 @@ void Hand::call (int min) {
 int Hand::size() {
     return cards_in_hand.size();
 }
-
 int Hand::bet (int x) {
     return bet_value = x;
 }
@@ -167,18 +173,29 @@ Player::Player (Deck& d) {
     hit (d);
     hit (d);
     money = 500;
-    name = "P" + d._top()/2;
 }
 void Player::showhands() {
-    if (split_hand != NULL) {
+    if (split_hand.size() > 0) {
         showhand();
         showsplit();
     } else showhand();
 }
+bool Hand::mode() {
+    return has_hit;
+}
+bool Player::has_split() {
+    return _split;
+}
 void Player::split (Deck& d) {
+    if (get_card (0).get_rank() != get_card (1).get_rank()) return;
     Hand sp;
-    sp.setcard (0, get_card (0));
-    split_hand = &sp;
+    Card c = get_card (1);
+    sp.setcard (0, c);
+    sp.hit (d);
+    split_hand = sp;
+    setcard (1, d.draw_card());
+    total();
+    _split = true;
 }
 void Player::betting (int& min) {
     bool x = true;
@@ -207,13 +224,36 @@ void Player::betting (int& min) {
         }
     }
 }
-ostream &operator<< (ostream& output, Hand& h) {
-    for (int i = 0; i < h.size(); i++)
-        output << h.get_card (i);
+ostream &operator<< (ostream& output, Player& p) {
+    output << p.player_name() << " " << p.get_money() << " ";
+    if (p.mode()) {
+        for (int i = 0; i < p.size(); i++)
+            output << p.get_card (i);
+        if (p.has_split()) {
+            output << "  ";
+            for (int i = 0; i < p.split_hand.size(); i++)
+                output << p.split_hand.get_card (i);
+        }
+    } else {
+        output << p.get_card (0) << null_card;
+        if (p.has_split()) {
+            output << "  " <<
+                   p.split_hand.get_card (0) << null_card;
+        }
+    }
     return output;
 }
 int  Player::get_money() {
     return money;
+}
+string Player::player_name() {
+    return name;
+}
+string Player::player_name (int x) {
+    if (x < 4) name = 3+x;
+    else if (x == 4) name = '5';
+    else name = '6';
+    return name;
 }
 // Game
 Game::Game (int x) {
@@ -222,11 +262,10 @@ Game::Game (int x) {
     du.shuffle();
     for (int i = 0; i < x; i++) {
         Player nu (du);
-        // nu.player_name (i);
+        nu.player_name (i);
         players.push_back (nu);
     }
     player = 0;
-    betting = true;
     min = 0;
     print_score();
 }
@@ -247,12 +286,11 @@ void Game::nextplayer() {
         gotoxy (0, 4 + player);
         cout << ">>";
     }
-    for (int i = 0; i < 2; i++)
-        null_card.display_card (40 + 3 * i, 0, false, false);
-    /* if ((player > 0) && (players[player - 1].has_split())) {
-        for (int i = 0; i < 2; i++)
-            null_card.display_card (60 + 3 * i, 0, false, false);
-    }*/
+    for (int i = 0; i < 12; i++) {
+        gotoxy (40, i);
+        for (int h = 0; h < 35; h++)
+            cout << " ";
+    }
 }
 int  Game::winner() {
     return 0;
@@ -266,19 +304,11 @@ void Game::print_score() {
     cout << "PLAYERS:" << endl
          << "---------------------------------";
     gotoxy (3, 4);
-    for (size_t i = 0; i < players.size(); i++) {
-        cout << "P" << i + 1 << " " <<  players[i].get_money() << " ";
-        if (betting)
-            cout << players[i].get_card (1) << null_card;
-        else
-            cout << players[i] << " ";
-        cout << endl << "   ";
-    }
+    for (size_t i = 0; i < players.size(); i++)
+        cout << players[i] << " "
+             << endl << "   ";
     gotoxy (3, 4 + players.size());
     cout << dealer << endl;
-}
-bool Game::mode() {
-    return betting;
 }
 int  Game::minbet() {
     return min;
@@ -298,15 +328,16 @@ void Game::betTurn() {
     char x;
     cin >> x;
     switch (x) {
-        /*  case ('s') :
-              p.split (du);
-              if (p.has_split())		{
-                  p.showhands();
-                  print_score();
-                  break;
-              }*/
+        case ('s') :
+            p.split (du);
+            if (p.has_split())		{
+                p.showhands();
+                print_score();
+                break;
+            }
+            break;
         case ('g') :
-            p.bet (c);
+            p.betting (c);
             print_score();
             break;
         case ('h') :
@@ -314,18 +345,20 @@ void Game::betTurn() {
             }*/
             nextplayer();
             break;
-            /*case ('j') :
-                if (p.has_split()) {
-                    int i;
-                    cout << "Which hand do you want to fold?";
-                    cin >> i;
-                    p.fold();
-                    betTurn();
-                } else {
-                    players[player].fold();
-                    nextplayer();
-                }
-                break;*/
+        case ('j') :
+            if (p.has_split()) {
+                int i;
+                cout << "Which hand do you want to fold?";
+                cin >> i;
+                if (i == 1) p.fold();
+                else if (i == 2) p.split_hand.fold();
+                else cout << "Error";
+                betTurn();
+            } else {
+                p.fold();
+                nextplayer();
+            }
+            break;
     }
 }
 void Game::calcWinner() {
