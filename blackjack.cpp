@@ -11,7 +11,7 @@ using namespace std;
 Card null_card;
 void clear_line (int x,int y) {
     gotoxy (x, y);
-    int to_end = 74 - x;
+    int to_end = 75 - x;
     for (int i = 0; i < to_end; i++)
         cout << " ";
 }

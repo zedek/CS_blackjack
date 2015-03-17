@@ -93,6 +93,7 @@ class Dealer: public Hand { // a hybrid between a player class and hand class, i
     void dealermove (Deck& d);
     friend ostream& operator<< (ostream& output, Dealer* d);
 };
+
 class Game {
 
   public:
