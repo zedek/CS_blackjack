@@ -62,7 +62,7 @@ ostream& operator<< (ostream& out, const Card& card) {
             out << "K";
             break;
         case ZERO:
-            out << "0";
+            out << "|";
             break;
         default:
             out << card.rank;

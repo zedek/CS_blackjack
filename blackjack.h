@@ -6,6 +6,7 @@
 #include <vector>
 #include <stdio.h>
 #include <ctime>
+#include <string>
 
 #include "card.h"
 #include "blackjack.h"
@@ -27,32 +28,13 @@ class Deck {
     int top;
 };
 
-class Dealer { // a hybrid between a player class and hand class, it doesn't
 
-  public:        // need a money pool like a player would.
-    Dealer (Deck& d);
-    Dealer();
-    void total();
-    void hit (Deck& d);
-    void dealermove (Deck& d);
-    void is_blackjack();
-    bool get_blackjack();
-    int getscore();
-    friend ostream &operator<< (ostream &output, const Dealer& d);
-
-  private:
-    vector<Card> hand;  //Dealers hand -- Needs seperate function to calculate total.
-    int ace;
-    int score;
-    bool blackjack;
-    bool bust;
-};
 class Hand {
   public:
     Hand();
     int getrank (int i);
     void setcard (int i, Card& x);
-    void total(); // to control  score
+    void total(); // to control  scoreh
     void hit (Deck& d);
     int size();
     int getscore();
@@ -62,13 +44,14 @@ class Hand {
     int ace;
     bool get_fold();
     bool get_call();
-    void showsplit();
+
     void is_blackjack();
     void call (int min);
     bool get_blackjack();
     void split_back (Card& card);
-    Card get_card (int i);
-    friend ostream& operator<< (ostream& output, Hand& h);
+    Card& get_card (int i);
+
+    bool mode();
 
   private:
     vector<Card> cards_in_hand;
@@ -77,6 +60,7 @@ class Hand {
     int bet_value;
     bool blackjack;
     bool folded;
+    bool has_hit = false;
 };
 
 class Player : public Hand {
@@ -89,14 +73,26 @@ class Player : public Hand {
     void split (Deck& du);
     bool has_split();
     void betting (int& min);
-
-
+    void showsplit();
+    Hand split_hand;
+    void split_fold();
+    friend ostream& operator<< (ostream& output, Player& h);
   private:
-    Hand* split_hand = NULL;
     int money;
+
     string name;
+    bool _split = false;
+
 };
 
+class Dealer: public Hand { // a hybrid between a player class and hand class, it doesn't
+
+  public:
+    Dealer (Deck& d);
+    Dealer();
+    void dealermove (Deck& d);
+    friend ostream& operator<< (ostream& output, Dealer* d);
+};
 class Game {
 
   public:
@@ -106,26 +102,21 @@ class Game {
     void nextplayer();
     void print_score();
     void gameHand();
-    bool mode();
+
     int minbet();
     void calcWinner();
-    Player& get_in (int i);
+
     void hitTurn();
     int num_players();
     Player& operator[] (int x);
 
-
-    bool betting = true;
     Deck du;
-
-
     vector<Player> players;
-    vector<Player*> player_in;
     vector<Player*> winners;
 
     int player = 0;
     int total_bet;
-    Card null_card;
+
     int min;
     Dealer* dealer;
 

@@ -7,7 +7,7 @@ enum Rank {
     ACE = 1, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
     JACK, QUEEN, KING, ZERO = 24
 };
-enum Suit { HEARTS = 3, DIAMONDS, CLUBS, SPADES , NUL = 24};
+enum Suit { HEARTS = 3, DIAMONDS, CLUBS, SPADES, NUL = 24};
 
 void gotoxy (int x, int y);
 
