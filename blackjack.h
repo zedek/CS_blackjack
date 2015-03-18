@@ -66,22 +66,22 @@ class Hand {
 class Player : public Hand {
   public:
     Player (Deck& d);
-    void showhands();
+    void   showhands();
     string player_name();
     string player_name (int x);
-    int get_money();
-    void split (Deck& du);
-    bool has_split();
-    void betting (int& min);
-    void showsplit();
-    Hand split_hand;
-    void split_fold();
+    int    get_money();
+    void   split (Deck& du);
+    bool   has_split();
+    void   betting (int& min);
+    void   showsplit();
+    Hand   split_hand;
+    void   split_fold();
     friend ostream& operator<< (ostream& output, Player& h);
-  private:
-    int money;
 
+  private:
+    int    money;
     string name;
-    bool _split = false;
+    bool   _split = false;
 
 };
 
@@ -98,29 +98,21 @@ class Game {
 
   public:
     Game (int x);
-    void betTurn();
-    int winner();
+    void betTurn (int& check);
     void nextplayer();
     void print_score();
     void gameHand();
-
-    int minbet();
     void calcWinner();
-
     void hitTurn();
-    int num_players();
-    Player& operator[] (int x);
+    int  num_players();
+    int  minbet();
 
     Deck du;
-    vector<Player> players;
-    vector<Player*> winners;
-
     int player = 0;
     int total_bet;
-
     int min;
     Dealer* dealer;
-
+    vector<Player> players;
 };
 
 #endif
