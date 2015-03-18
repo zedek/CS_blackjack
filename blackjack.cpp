@@ -98,11 +98,11 @@ void     Hand::total() {
         }
     }
     if (a == 0 && score > 21) {
-        fold();
+        bust();
         return;
     }
 }// Allows for multple aces to get reduced as score keeps going over 21.
-void     Hand::fold() {
+void     Hand::bust() {
     folded = true;
 }
 void     Hand::showhand() {
@@ -182,32 +182,41 @@ void     Player::split (Deck& d) {
     total();
     _split = true;
 }
-void     Player::betting (int& min) {
+void     Player::betting() {
+    int f = 10;
     bool x = true;
-    int f = min;
+    gotoxy (0, 20);
+    cout << f;
     FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
     Sleep (500);
     while (x) {
+        if (f == 90) clear_line (2, 20);
+        if (f == 110) {
+            cout << "Max bet is 100";
+            f -= 10;
+            clear_line (0, 20);
+            gotoxy (0, 20);
+            cout << f;
+        }
         if (GetAsyncKeyState (38) & 0x8000) {
             f += 10;
-            gotoxy (0, 15);
+            gotoxy (0, 20);
             cout << f;
             Sleep (250);
         }
         if (GetAsyncKeyState (40) & 0x8000) {
             if (f > 10) f -= 10;
-            gotoxy (0, 15);
+            gotoxy (0, 20);
             cout << f;
             Sleep (250);
         }
         if (GetAsyncKeyState (71) & 0x8000) {
             money -= f;
             bet (f);
-            gotoxy (0, 15);
+            gotoxy (0, 20);
             cout << f;
-            min = f;
             x = false;
-            Sleep (100);
+            clear_line (0, 20);
             return;
         }
     }
@@ -265,7 +274,6 @@ Game::   Game (int x) {
         players.push_back (nu);
     }
     player = 0;
-    min = 0;
     print_score();
 }
 void     Game::nextplayer() {
@@ -337,7 +345,7 @@ void     Game::calcWinner() {
         }
     }
 }
-void     Game::betTurn (int& check) {
+void     Game::betTurn() {
     Player &p = players[player];
     clear_line (0, 23);
     gotoxy (0, 23);
@@ -346,9 +354,7 @@ void     Game::betTurn (int& check) {
     if (players[player].get_fold()) {
         nextplayer();
         return;
-        check++;
     }
-    int c = minbet();
     bool x = true;
     Sleep (100);
     while (x) {
@@ -357,23 +363,21 @@ void     Game::betTurn (int& check) {
             if (p.has_split())		{
                 p.showhands();
                 print_score();
-                betTurn (check);
+                betTurn();
                 x = false;
                 Sleep (250);
             }
         }
         if (GetAsyncKeyState (71) & 0x8000) {
-            p.betting (c);
+            p.betting();
             print_score();
             nextplayer();
             Sleep (150);
-            check = 0;
             x = false;
             return;
         }
         if (GetAsyncKeyState (72) & 0x8000) {
             nextplayer();
-            check++;
             Sleep (150);
             x = false;
             return;
@@ -383,15 +387,14 @@ void     Game::betTurn (int& check) {
                 int i;
                 cout << "Which hand do you want to fold?";
                 cin >> i;
-                if (i == 1) p.fold();
+                if (i == 1) p.bust();
                 else if (i == 2) p.split_fold();
                 else cout << "Error";
-                betTurn (check);
+                betTurn();
                 Sleep (150);
                 return;
             } else {
-                p.fold();
-                check++;
+                p.bust();
                 nextplayer();
                 Sleep (150);
                 return;
@@ -427,7 +430,4 @@ void     Game::hitTurn() {
             return;
         }
     }
-}
-int      Game::minbet() {
-    return min;
 }

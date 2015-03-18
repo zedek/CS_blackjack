@@ -38,7 +38,7 @@ class Hand {
     void hit (Deck& d);
     int size();
     int getscore();
-    void fold();
+    void bust();
     void showhand();
     int bet (int x);
     int ace;
@@ -72,7 +72,7 @@ class Player : public Hand {
     int    get_money();
     void   split (Deck& du);
     bool   has_split();
-    void   betting (int& min);
+    void   betting();
     void   showsplit();
     Hand   split_hand;
     void   split_fold();
@@ -98,7 +98,7 @@ class Game {
 
   public:
     Game (int x);
-    void betTurn (int& check);
+    void betTurn();
     void nextplayer();
     void print_score();
     void gameHand();
@@ -109,8 +109,6 @@ class Game {
 
     Deck du;
     int player = 0;
-    int total_bet;
-    int min;
     Dealer* dealer;
     vector<Player> players;
 };
