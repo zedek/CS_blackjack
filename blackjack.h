@@ -10,8 +10,8 @@
 
 #include "card.h"
 #include "blackjack.h"
-
 using namespace std;
+
 
 class Deck {
   public:
@@ -32,35 +32,34 @@ class Deck {
 class Hand {
   public:
     Hand();
-    int getrank (int i);
-    void setcard (int i, Card& x);
-    void total(); // to control  scoreh
-    void hit (Deck& d);
-    int size();
-    int getscore();
-    void bust();
-    void showhand();
-    int bet (int x);
-    int ace;
-    bool get_fold();
-    bool get_call();
-
-    void is_blackjack();
-    void call (int min);
-    bool get_blackjack();
-    void split_back (Card& card);
+    int   getrank (int i);
+    void  setcard (int i, Card& x);
+    void  total(); // to control  scoreh
+    void  hit (Deck& d);
+    int   size();
+    int   getscore();
+    void  bust();
+    void  showhand();
+    int   bet (int x);
+    int   ace;
+    bool  get_fold();
+    bool  get_call();
+    void  is_blackjack();
+    void  call (int min);
+    bool  get_blackjack();
+    void  split_back (Card& card);
     Card& get_card (int i);
 
-    bool mode();
+    bool  mode();
 
   private:
     vector<Card> cards_in_hand;
-    int score;
-    bool hascalled;
-    int bet_value;
-    bool blackjack;
-    bool folded;
-    bool has_hit = false;
+    int   score;
+    bool  hascalled;
+    int   bet_value;
+    bool  blackjack;
+    bool  folded;
+    bool  has_hit = false;
 };
 
 class Player : public Hand {

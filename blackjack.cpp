@@ -89,8 +89,8 @@ void     Hand::total() {
         if (getrank (i) == 1) score += 11;
         else if (getrank (i) > 10) score += 10;
         else score += getrank (i);
-        is_blackjack();
     }
+    if (size() > 1) is_blackjack();
     if (a != 0) {
         while (score > 21 && a > 0) {
             score -= 10;
@@ -110,8 +110,9 @@ void     Hand::showhand() {
         cards_in_hand[i].display_card (40 + 3 * i, 0, false, true);
 }
 void     Hand::is_blackjack() {
-    if ((cards_in_hand[0].get_rank() || cards_in_hand[1].get_rank()  > 9) &&
-            ((cards_in_hand[0].get_rank() || cards_in_hand[1].get_rank() == 1)))
+    if (size() > 2) return;
+    if ((cards_in_hand[0].get_rank() > 9 ||  cards_in_hand[1].get_rank()  > 9) &&
+            ((cards_in_hand[0].get_rank() == 1|| cards_in_hand[1].get_rank() == 1)))
         blackjack = true;
 }
 void     Hand::call (int min) {
@@ -330,17 +331,41 @@ void     Game::calcWinner() {
     for (size_t i = 0; i < players.size(); i++) {
         if (players[i].get_blackjack()) {
             gotoxy (22, 0);
-            cout << "Player" << players[i].player_name() << " Has blackjack";
+            cout << "Player" << players[i].player_name() << " Has blackjack" << endl;
             x++;
         }
     }
+    int y = 0;
     if (x > 0) return;
+    else {
+        //check for hand size of 5
+        for (size_t i = 0; i < players.size(); i++) {
+            if (players[i].size() == 5 && players[i].getscore() < 21) {
+                gotoxy (22, 0);
+                cout << "Player " << players[i].player_name() << " is the winner"<< endl;
+                y++;
+            }
+        }
+    }
+    int z = 0;
+    if (y > 0) return;
     else {
         //check for 21
         for (size_t i = 0; i < players.size(); i++) {
             if (players[i].getscore() == 21) {
                 gotoxy (22, 0);
-                cout << "Player " << players[i].player_name() << " is the winner";
+                cout << "Player " << players[i].player_name() << " is the winner"<< endl;
+                z++;
+            }
+        }
+    }
+    if (z > 0) return;
+    else {
+        //compare dealer and player scores
+        for (size_t i = 0; i < players.size(); i++) {
+            if (players[i].getscore() < 21 && dealer->getscore() < players[i].getscore()) {
+                gotoxy (22, 0);
+                cout << "Player " << players[i].player_name() << " is the winner" << endl;
             }
         }
     }
@@ -417,6 +442,11 @@ void     Game::hitTurn() {
     bool x = true;
     while (x) {
         if (GetAsyncKeyState (70) & 0x8000) {
+            if (p.get_fold() == true) return;
+            if (p.size() == 5) {
+                nextplayer();
+                return;
+            }
             p.hit (du);
             p.showhands();
             print_score();

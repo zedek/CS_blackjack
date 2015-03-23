@@ -26,7 +26,10 @@ int main() {
         t.hitTurn();
         t.gameHand();
     }
+    t.dealer->dealermove (t.du);
+    t.print_score();
     t.calcWinner();
+    Sleep (1000);
     gotoxy (0, 23);
     return 0;
 }
