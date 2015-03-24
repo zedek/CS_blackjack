@@ -12,7 +12,6 @@
 #include "blackjack.h"
 using namespace std;
 
-
 class Deck {
   public:
     Deck();
@@ -28,29 +27,28 @@ class Deck {
     int top;
 };
 
-
 class Hand {
   public:
     Hand();
-    int   getrank (int i);
-    void  setcard (int i, Card& x);
+    Card& get_card (int i);
+    int   get_rank (int i);
+    void  set_card (int i, Card& x);
     void  total(); // to control  scoreh
     void  hit (Deck& d);
-    int   size();
-    int   getscore();
     void  bust();
-    void  showhand();
-    int   bet (int x);
-    int   ace;
-    bool  get_fold();
-    bool  get_call();
+    void  show_hand();
     void  is_blackjack();
     void  call (int min);
-    bool  get_blackjack();
     void  split_back (Card& card);
-    Card& get_card (int i);
-
+    void  hand_reset (Deck& d);
+    int   size();
+    int   get_score();
+    int   bet (int x);
+    bool  get_fold();
+    bool  get_call();
+    bool  get_blackjack();
     bool  mode();
+    int   ace;
 
   private:
     vector<Card> cards_in_hand;
@@ -65,18 +63,18 @@ class Hand {
 class Player : public Hand {
   public:
     Player (Deck& d);
-    void   showhands();
+    void   show_hands();
+    void   split (Deck& du);
+    void   betting();
+    void   show_split();
+    void   split_fold();
+    int    get_money();
+    bool   has_split();
     string player_name();
     string player_name (int x);
-    int    get_money();
-    void   split (Deck& du);
-    bool   has_split();
-    void   betting();
-    void   showsplit();
-    Hand   split_hand;
-    void   split_fold();
     friend ostream& operator<< (ostream& output, Player& h);
 
+    Hand   split_hand;
   private:
     int    money;
     string name;
@@ -89,7 +87,7 @@ class Dealer: public Hand { // a hybrid between a player class and hand class, i
   public:
     Dealer (Deck& d);
     Dealer();
-    void dealermove (Deck& d);
+    void dealer_move (Deck& d);
     friend ostream& operator<< (ostream& output, Dealer* d);
 };
 
@@ -97,17 +95,19 @@ class Game {
 
   public:
     Game (int x);
-    void betTurn();
-    void nextplayer();
+    void bet_round();
+    void next_player();
     void print_score();
-    void gameHand();
-    void calcWinner();
-    void hitTurn();
+    void game_hand();
+    void calc_winner();
+    void hit_round();
+    void game_board();
+    void new_game();
     int  num_players();
     int  minbet();
 
     Deck du;
-    int player = 0;
+    int  player = 0;
     Dealer* dealer;
     vector<Player> players;
 };
