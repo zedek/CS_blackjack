@@ -58,7 +58,6 @@ int      Deck::_top() {
 Hand::   Hand() {
     ace = 0;
     score = 0;
-    hascalled = false;
     folded = false;
     blackjack = false;
 }
@@ -115,14 +114,15 @@ void     Hand::is_blackjack() {
             ((cards_in_hand[0].get_rank() == 1|| cards_in_hand[1].get_rank() == 1)))
         blackjack = true;
 }
-void     Hand::call (int min) {
-    bet_value = min;
-    hascalled = true;
-}
-void     Hand::hand_reset (Deck& d) {
+
+void     Hand::reset (Deck& d) {
     cards_in_hand.clear();
     hit (d);
     hit (d);
+    has_hit = false;
+    blackjack = false;
+    folded = false;
+    bet_value = 0;
 }
 
 bool     Hand::get_fold() { return folded; }
@@ -192,7 +192,7 @@ void     Player::split (Deck& d) {
 void     Player::betting() {
     int f = 10;
     bool x = true;
-    gotoxy (0, 20);
+    gotoxy (0, 22);
     cout << f;
     FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
     Sleep (500);
@@ -204,28 +204,44 @@ void     Player::betting() {
             clear_line (0, 20);
             gotoxy (0, 20);
             cout << f;
+            display_chips (f);
         }
         if (GetAsyncKeyState (38) & 0x8000) {
             f += 10;
             gotoxy (0, 20);
             cout << f;
-            Sleep (250);
+            display_chips (f);
+            Sleep (150);
         }
         if (GetAsyncKeyState (40) & 0x8000) {
             if (f > 10) f -= 10;
             gotoxy (0, 20);
             cout << f;
-            Sleep (250);
+            display_chips (-f);
+            Sleep (150);
         }
         if (GetAsyncKeyState (71) & 0x8000) {
             money -= f;
             bet (f);
             gotoxy (0, 20);
             cout << f;
+            display_chips (f);
             x = false;
             clear_line (0, 20);
             return;
         }
+    }
+}
+void     Player::ten_chip() {
+    cout << "[--10--]";
+}
+void     Player::fifty_chip() {
+    cout << "[--50--]";
+}
+void     Player::display_chips (int x) {
+    for (int i=1; i <= x / 10; i++) {
+        gotoxy (0, 22-i);
+        ten_chip();
     }
 }
 void     Player::split_fold() {
@@ -269,7 +285,6 @@ ostream& operator<< (ostream& output, Player& p) {
     }
     return output;
 }
-
 //       Game
 Game::   Game (int x) {
     du = Deck (x);
@@ -380,7 +395,7 @@ void     Game::bet_round() {
     Player &p = players[player];
     clear_line (0, 23);
     gotoxy (0, 23);
-    cout << "Press S to split, G then UP/Down and G to bet, H to call, J to fold" << endl;
+    cout << "Press S to split, G then UP/Down and G to bet, H to Fold" << endl;
     FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
     if (players[player].get_fold()) {
         next_player();
@@ -408,14 +423,9 @@ void     Game::bet_round() {
             return;
         }
         if (GetAsyncKeyState (72) & 0x8000) {
-            next_player();
-            Sleep (150);
-            x = false;
-            return;
-        }
-        if (GetAsyncKeyState (74) & 0x8000) {
             if (p.has_split()) {
                 int i;
+                gotoxy (23, 0);
                 cout << "Which hand do you want to fold?";
                 cin >> i;
                 if (i == 1) p.bust();
@@ -470,8 +480,13 @@ void     Game::hit_round() {
 void     Game::game_board() {
 }
 void     Game::new_game() {
-    for (int i = 0; i < players.size(); i++)
-        players[i].hand_reset (du);
+    for (int i = 0; i < (int) players.size(); i++)
+        players[i].reset (du);
     next_player();
+    for (int i = 0; i < (3 + players.size()); i++) {
+        clear_line (0, i);
+        clear_line (0, i+1);
+    }
+    clear_line (0, players.size() + 4);
+    dealer->reset (du);
 }
-

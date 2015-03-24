@@ -38,9 +38,9 @@ class Hand {
     void  bust();
     void  show_hand();
     void  is_blackjack();
-    void  call (int min);
+
     void  split_back (Card& card);
-    void  hand_reset (Deck& d);
+    void  reset (Deck& d);
     int   size();
     int   get_score();
     int   bet (int x);
@@ -53,7 +53,6 @@ class Hand {
   private:
     vector<Card> cards_in_hand;
     int   score;
-    bool  hascalled;
     int   bet_value;
     bool  blackjack;
     bool  folded;
@@ -68,11 +67,15 @@ class Player : public Hand {
     void   betting();
     void   show_split();
     void   split_fold();
+    void   ten_chip();
+    void   fifty_chip();
+    void   display_chips (int x);
     int    get_money();
     bool   has_split();
     string player_name();
     string player_name (int x);
     friend ostream& operator<< (ostream& output, Player& h);
+
 
     Hand   split_hand;
   private:

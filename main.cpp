@@ -18,8 +18,7 @@ int main() {
     cin >> y;
     system ("cls");
     Game t (y);
-    do {
-        //t.player_name(y);
+    while (true) {
         gotoxy (0, 4);
         cout << ">>";
         //t[0].setcard (1, t[0].get_card (0));
@@ -32,17 +31,24 @@ int main() {
             t.hit_round();
             t.game_hand();
         }
+        t.dealer->dealer_move (t.du);
+        t.print_score();
         t.calc_winner();
-        gotoxy (0, 20);
-        cout << "Would you like to play again? 1 for yes 0 for no." << endl;
-        cin >> again;
-        if (again == 1) {
-            system ("cls");
-            t.new_game();
-            t.print_score();
-            again = 0;
-        } else loop = false;
-    } while (loop);
-    gotoxy (0, 23);
+        gotoxy (0, 23);
+        cout << "Would you like to play again? F for yes, H for no." << endl;
+        bool x = true;
+        while (x) {
+            if (GetAsyncKeyState (70) & 0x8000) {
+                t.new_game();
+                t.print_score();
+                x = false;
+                Sleep (50);
+            }
+            if (GetAsyncKeyState (72) & 0x8000) {
+                gotoxy (0, 23);
+                return 0;
+            }
+        }
+    }
     return 0;
 }
