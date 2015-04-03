@@ -138,7 +138,8 @@ int      Hand::size() {
 	return cards_in_hand.size();
 }
 int      Hand::bet(int x) {
-	return bet_value = x;
+        bet_value = x;
+	return bet_value;
 }
 
 
