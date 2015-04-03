@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <Windows.h>
 #include <vector>
@@ -61,6 +62,7 @@ Hand::Hand() {
 	hascalled = false;
 	folded = false;
 	blackjack = false;
+	bet_value = 10;
 }
 Card&    Hand::get_card(int i) {
 	return cards_in_hand[i];
@@ -110,7 +112,7 @@ void     Hand::showhand() {
 		cards_in_hand[i].display_card(40 + 3 * i, 0, false, true);
 }
 void     Hand::is_blackjack() {
-	if ((cards_in_hand[0].get_rank()  || cards_in_hand[1].get_rank()  > 9) &&
+	if ((cards_in_hand[0].get_rank() || cards_in_hand[1].get_rank()  > 9) &&
 		((cards_in_hand[0].get_rank() || cards_in_hand[1].get_rank() == 1)))
 		blackjack = false;
 }
@@ -138,7 +140,7 @@ int      Hand::size() {
 	return cards_in_hand.size();
 }
 int      Hand::bet(int x) {
-        bet_value = x;
+	bet_value = x;
 	return bet_value;
 }
 
@@ -242,7 +244,7 @@ int      Player::get_money() {
 	return money;
 }
 void      Player::set_money(int x){
-	 money = money + x;
+	money += x;
 }
 string   Player::player_name() {
 	return name;
@@ -341,12 +343,12 @@ void     Game::calcWinner() {
 		return;
 	}
 	int x = 0;
-	int payout;
+	int payout = 0;
 	for (size_t i = 0; i < players.size(); i++) {
 		if (players[i].get_blackjack()) {
 			gotoxy(22, 0);
 			cout << "Player" << players[i].player_name() << " Has blackjack";
-			payout = (players[i].get_betValue()*3.5);
+			payout = (players[i].get_betValue()*3);
 			players[i].set_money(payout);
 			x++;
 		}
@@ -359,12 +361,12 @@ void     Game::calcWinner() {
 			if (players[i].size() == 5 && players[i].getscore() < 21){
 				gotoxy(22, 0);
 				cout << "Player " << players[i].player_name() << " is the winner";
-				payout = (players[i].get_betValue()*2);
+				payout = (players[i].get_betValue() * 2);
 				players[i].set_money(payout);
 				y++;
 			}
 		}
-	}	
+	}
 	int z = 0;
 	if (y > 0) return;
 	else {
@@ -373,7 +375,7 @@ void     Game::calcWinner() {
 			if (players[i].getscore() == 21) {
 				gotoxy(22, 0);
 				cout << "Player " << players[i].player_name() << " is the winner";
-				payout = (players[i].get_betValue()*2);
+				payout = (players[i].get_betValue() * 2);
 				players[i].set_money(payout);
 				z++;
 			}
@@ -386,7 +388,7 @@ void     Game::calcWinner() {
 			if ((players[i].getscore() < 21) && (dealer->getscore() < players[i].getscore())) {
 				gotoxy(22, 0);
 				cout << "Player " << players[i].player_name() << " is the winner";
-				payout = (players[i].get_betValue()*2);
+				payout = (players[i].get_betValue() * 2);
 				players[i].set_money(payout);
 			}
 			else
