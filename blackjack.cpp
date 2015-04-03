@@ -342,54 +342,55 @@ void     Game::game_hand() {
         }
     }
 }
-void     Game::calc_winner() {
-    if (dealer->get_blackjack() || dealer->get_score() == 21)	{
-        gotoxy (22, 0);
-        cout << "dealer wins" << endl;
-        return;
-    }
-    int x = 0;
-    for (size_t i = 0; i < players.size(); i++) {
-        if (players[i].get_blackjack()) {
-            gotoxy (22, 0);
-            cout << "Player" << players[i].player_name() << " Has blackjack" << endl;
-            x++;
-        }
-    }
-    int y = 0;
-    if (x > 0) return;
-    else {
-        //check for hand size of 5
-        for (size_t i = 0; i < players.size(); i++) {
-            if (players[i].size() == 5 && players[i].get_score() < 21) {
-                gotoxy (22, 0);
-                cout << "Player " << players[i].player_name() << " is the winner"<< endl;
-                y++;
-            }
-        }
-    }
-    int z = 0;
-    if (y > 0) return;
-    else {
-        //check for 21
-        for (size_t i = 0; i < players.size(); i++) {
-            if (players[i].get_score() == 21) {
-                gotoxy (22, 0);
-                cout << "Player " << players[i].player_name() << " is the winner"<< endl;
-                z++;
-            }
-        }
-    }
-    if (z > 0) return;
-    else {
-        //compare dealer and player scores
-        for (size_t i = 0; i < players.size(); i++) {
-            if (players[i].get_score() < 21 && dealer->get_score() < players[i].get_score()) {
-                gotoxy (22, 0);
-                cout << "Player " << players[i].player_name() << " is the winner" << endl;
-            }
-        }
-    }
+void     Game::calcWinner() {
+
+	if (dealer->get_blackjack() || dealer->getscore() == 21)	{
+		gotoxy(22, 0);
+		cout << "dealer wins" << endl;
+		return;
+	}
+	int x = 0;
+	for (size_t i = 0; i < players.size(); i++) {
+		if (players[i].get_blackjack()) {
+			gotoxy(22, 0);
+			cout << "Player" << players[i].player_name() << " Has blackjack";
+			x++;
+		}
+	}
+	int y = 0;
+	if (x > 0) return;
+	else {
+		//check for hand size of 5
+		for (size_t i = 0; i < players.size(); i++) {
+			if (players[i].size() == 5 && players[i].getscore() < 21){
+				gotoxy(22, 0);
+				cout << "Player " << players[i].player_name() << " is the winner";
+				y++;
+			}
+		}
+	}	
+	int z = 0;
+	if (y > 0) return;
+	else {
+		//check for 21
+		for (size_t i = 0; i < players.size(); i++) {
+			if (players[i].getscore() == 21) {
+				gotoxy(22, 0);
+				cout << "Player " << players[i].player_name() << " is the winner";
+				z++;
+			}
+		}
+	}
+	if (z > 0) return;
+	else {
+		//compare dealer and player scores
+		for (size_t i = 0; i < players.size(); i++){
+			if (dealer->getscore() < players[i].getscore()) {
+				gotoxy(22, 0);
+				cout << "Player " << players[i].player_name() << " is the winner";
+			}
+		}
+	}
 }
 void     Game::bet_round() {
     Player &p = players[player];
