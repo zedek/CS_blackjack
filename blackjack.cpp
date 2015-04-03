@@ -385,9 +385,14 @@ void     Game::calcWinner() {
 	else {
 		//compare dealer and player scores
 		for (size_t i = 0; i < players.size(); i++){
-			if (dealer->getscore() < players[i].getscore()) {
+			if ((players[i].getscore() < 21) && (dealer->getscore() < players[i].getscore())) {
 				gotoxy(22, 0);
 				cout << "Player " << players[i].player_name() << " is the winner";
+			}
+			else
+			{
+				gotoxy(22, 0);
+				cout << "dealer wins" << endl;
 			}
 		}
 	}
