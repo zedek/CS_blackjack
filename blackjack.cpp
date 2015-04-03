@@ -107,7 +107,7 @@ void     Hand::total() {
 void     Hand::bust() {
 	folded = true;
 }
-void     Hand::showhand() {
+void     Hand::show_hands() {
 	for (int i = 0; i < size(); i++)
 		cards_in_hand[i].display_card(40 + 3 * i, 0, false, true);
 }
@@ -175,10 +175,10 @@ Player::Player(Deck& d) {
 }
 void     Player::showhands() {
 	if (split_hand.size() > 0) {
-		showhand();
+		show_hands();
 		showsplit();
 	}
-	else showhand();
+	else show_hands();
 }
 void     Player::split(Deck& d) {
 	if (get_card(0).get_rank() != get_card(1).get_rank()) return;
@@ -289,7 +289,7 @@ Game::Game(int x) {
 	player = 0;
 	print_score();
 }
-void     Game::nextplayer() {
+void     Game::next_player() {
 	if (player == players.size() - 1) {
 		gotoxy(0, 4 + players.size() - 1);
 		cout << "   ";
@@ -308,31 +308,79 @@ void     Game::nextplayer() {
 		clear_line(40, i);
 }
 void     Game::print_score() {
-	gotoxy(3, 2);
-	cout << "PLAYERS:" << endl
-		<< "---------------------------------";
 	gotoxy(3, 4);
+	cout << "PLAYERS:" << endl
+		<< "-----------------------";
+	gotoxy(3, 6);
 	for (size_t i = 0; i < players.size(); i++)
 		cout << players[i] << " "
 		<< endl << "   ";
-	gotoxy(3, 4 + players.size());
+	gotoxy(3, 6 + players.size());
 	cout << "Dealer" << dealer << endl;
+	gotoxy(0, 17);
+	cout << "-----------------------";
+
+	for (int i = 0; i < 11; i++)
+	{
+		gotoxy(23, 6 + i);
+		cout << "|";
+	}
+	for (int i = 0; i < 24; i++)
+	{
+		gotoxy(35, 0 + i);
+		cout << '|';
+	}
 }
-void     Game::gameHand() {
+void     Game::game_hand() {
 	clear_line(0, 23);
 	if (players[player].get_fold())
-		nextplayer();
+		next_player();
 	gotoxy(0, 23);
 	cout << "Press F to pay respects" << endl;
-	Sleep(250);
+	//Sleep(250);
+	game_board();
 	bool x = true;
 	while (x) {
 		if (GetAsyncKeyState(70) & 0x8000) {
-			players[player].showhands();
+			players[player].show_hands();
 			Sleep(250);
 			x = false;
 		}
 	}
+}
+
+void     Game::game_board()
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_GREEN);
+
+	for (int i = 0; i < 35; i++)
+	{
+		for (int j = 0; j < 13; j++)
+		{
+			gotoxy(40 + i, 5 + j);
+			cout << " ";
+		}
+	}
+	gotoxy(40, 5);
+	for (int i = 0; i < 36; i++)
+	{
+		gotoxy(40 + i, 5);
+		cout << '_';
+
+		gotoxy(40 + i, 18);
+		cout << '_';
+	}
+
+	for (int i = 0; i < 13; i++)
+	{
+		gotoxy(40, 6 + i);
+		cout << "|";
+
+		gotoxy(75, 6 + i);
+		cout << '|';
+
+	}
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
 void     Game::calcWinner() {
@@ -348,7 +396,7 @@ void     Game::calcWinner() {
 		if (players[i].get_blackjack()) {
 			gotoxy(22, 0);
 			cout << "Player" << players[i].player_name() << " Has blackjack";
-			payout = (players[i].get_betValue()*3);
+			payout = (players[i].get_betValue() * 3);
 			players[i].set_money(payout);
 			x++;
 		}
@@ -407,7 +455,7 @@ void     Game::betTurn() {
 	cout << "Press S to split, G then UP/Down and G to bet, H to call, J to fold" << endl;
 	FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 	if (players[player].get_fold()) {
-		nextplayer();
+		next_player();
 		return;
 	}
 	bool x = true;
@@ -426,13 +474,13 @@ void     Game::betTurn() {
 		if (GetAsyncKeyState(71) & 0x8000) {
 			p.betting();
 			print_score();
-			nextplayer();
+			next_player();
 			Sleep(150);
 			x = false;
 			return;
 		}
 		if (GetAsyncKeyState(72) & 0x8000) {
-			nextplayer();
+			next_player();
 			Sleep(150);
 			x = false;
 			return;
@@ -451,7 +499,7 @@ void     Game::betTurn() {
 			}
 			else {
 				p.bust();
-				nextplayer();
+				next_player();
 				Sleep(150);
 				return;
 			}
@@ -466,7 +514,7 @@ void     Game::hitTurn() {
 	cout << "F to hit, H to stand";
 	FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 	if (players[player].get_fold()) {
-		nextplayer();
+		next_player();
 		return;
 	}
 	Sleep(100);
@@ -480,7 +528,7 @@ void     Game::hitTurn() {
 			hitTurn();
 		}
 		if (GetAsyncKeyState(72) & 0x8000) {
-			nextplayer();
+			next_player();
 			x = false;
 			Sleep(100);
 			return;
